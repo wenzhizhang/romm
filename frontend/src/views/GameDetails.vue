@@ -42,6 +42,7 @@ import {
   earnedAchievementKeys,
   isAchievementEarned,
 } from "@/utils/achievements";
+import { localRomBackground } from "@/utils/romArtwork";
 import { isRomVerified } from "@/utils/romVerification";
 import { patchQuery } from "@/utils/routeQuery";
 import { formatReleaseDate } from "@/utils/time";
@@ -183,8 +184,15 @@ const coverPath = computed(() => {
 const coverFallback = computed(() => currentRom.value?.url_cover ?? null);
 const resolvedCover = computed(() => coverPath.value ?? coverFallback.value);
 
+// A folder game carrying its own background image paints the page with it.
+const backgroundArt = computed(
+  () =>
+    (currentRom.value ? localRomBackground(currentRom.value) : null) ??
+    resolvedCover.value,
+);
+
 watch(
-  resolvedCover,
+  backgroundArt,
   (url) => {
     if (url) setBgArt(url);
   },

@@ -111,6 +111,10 @@
 #   # "<folder> | <file>". Meant for libraries whose folders are localized names
 #   # and whose files keep the English release name.
 #   folder_game_names: true
+#   # Folder games: use the images the folder carries itself instead of fetching
+#   # them. A "cover.*" file becomes the game's cover, "bg.*" its background and
+#   # "logo.*" its logo; the provider's own artwork is not downloaded for those.
+#   folder_game_media: true
 #   # Metadata priority during scans
 #   priority:
 #     # Below are the default priority values used

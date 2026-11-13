@@ -20,7 +20,11 @@ import i18n from "@/locales";
 import type { DetailedRom } from "@/stores/roms";
 import { isRenderableImageExtension } from "@/utils/imageSupport";
 import { mediaKey } from "@/utils/mediaKeys";
-import { versionedResourceUrl, versionedRomFileUrl } from "@/utils/romFiles";
+import {
+  fileExtension,
+  versionedResourceUrl,
+  versionedRomFileUrl,
+} from "@/utils/romFiles";
 
 // Library file extensions the browser can render inline. Kept in sync with the
 // backend download endpoint (utils/media_types.py), which serves these inline.
@@ -200,4 +204,18 @@ export function resolveRomArtwork(rom: DetailedRom): MediaShelfItem[] {
   }
 
   return [...out, ...libraryMedia];
+}
+
+// The game folder's own background image, when it carries one.
+export function localRomBackground(rom: DetailedRom): string | null {
+  const file = rom.files.find((f) => {
+    if (!f.is_top_level) return false;
+    const ext = fileExtension(f.file_name);
+    const stem = f.file_name.slice(0, f.file_name.length - ext.length - 1);
+    return (
+      stem.toLowerCase() === "bg" &&
+      isRenderableImageExtension(ext, LIBRARY_IMAGE_EXTENSIONS)
+    );
+  });
+  return file ? versionedRomFileUrl(file) : null;
 }

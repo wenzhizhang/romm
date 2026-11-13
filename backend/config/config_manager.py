@@ -553,6 +553,9 @@ class Config:
     # Folder games: search providers with the main file's name and title the
     # game "<folder> | <file>", for libraries with localized folder names.
     SCAN_FOLDER_GAME_NAMES: bool
+    # Folder games: use the cover/bg/logo images the folder carries itself
+    # instead of fetching them from the metadata providers.
+    SCAN_FOLDER_GAME_MEDIA: bool
     GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType
     GAMELIST_MEDIA_IMAGE: MetadataMediaType
     STREAMING_ENABLED: bool
@@ -919,6 +922,9 @@ class ConfigManager:
             ),
             SCAN_FOLDER_GAME_NAMES=get_nested(
                 self._raw_config, "scan.folder_game_names", False
+            ),
+            SCAN_FOLDER_GAME_MEDIA=get_nested(
+                self._raw_config, "scan.folder_game_media", False
             ),
             GAMELIST_AUTO_EXPORT_ON_SCAN=get_nested(
                 self._raw_config, "scan.gamelist.export", False
@@ -1538,6 +1544,7 @@ class ConfigManager:
                 },
                 "media": self.config.SCAN_MEDIA,
                 "folder_game_names": self.config.SCAN_FOLDER_GAME_NAMES,
+                "folder_game_media": self.config.SCAN_FOLDER_GAME_MEDIA,
                 "gamelist": {
                     "export": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
                     "media": {

@@ -51,6 +51,7 @@ from handler.metadata.steam_handler import SteamRom
 from handler.scan.lookups import RomLookups
 from handler.scan.merge import (
     apply_artwork_priority,
+    apply_folder_game_media,
     apply_folder_game_title,
     apply_metadata_priority,
     apply_sgdb_match,
@@ -473,6 +474,7 @@ async def scan_rom(
     merge_tags(rom_attrs, metadata_handlers, priority_ordered, hash_claims)
     artwork_orders = order_artwork_sources(list(metadata_handlers))
     apply_artwork_priority(rom_attrs, metadata_handlers, apply_sources, artwork_orders)
+    apply_folder_game_media(rom_attrs, fs_rom, lookups.match_files)
 
     # Don't overwrite existing base fields on update, unmatched and hashes scans
     if not newly_added and scan_type in (

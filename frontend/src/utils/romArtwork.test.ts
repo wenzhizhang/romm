@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RomFileSchema } from "@/__generated__";
 import type { DetailedRom } from "@/stores/roms";
 import { detailedRomFixture, romFileFixture } from "@/utils/rom.fixtures";
-import { resolveRomArtwork } from "./romArtwork";
+import { localRomBackground, resolveRomArtwork } from "./romArtwork";
 
 function makeFile(overrides: Partial<RomFileSchema>): RomFileSchema {
   return romFileFixture({
@@ -281,5 +281,32 @@ describe("resolveRomArtwork (clip posters)", () => {
     expect(
       resolveRomArtwork(rom).find((e) => e.isVideo)?.poster,
     ).toBeUndefined();
+  });
+});
+
+describe("localRomBackground", () => {
+  it("finds the folder's own background image", () => {
+    const rom = romWithFiles([
+      makeFile({ id: 7, file_name: "bg.png" }),
+      makeFile({ id: 8, file_name: "cover.png" }),
+    ]);
+
+    expect(localRomBackground(rom)).toContain(
+      "/api/roms/7/files/content/bg.png",
+    );
+  });
+
+  it("ignores a background nested in the game's own data", () => {
+    const rom = romWithFiles([
+      makeFile({ file_name: "bg.png", is_top_level: false }),
+    ]);
+
+    expect(localRomBackground(rom)).toBeNull();
+  });
+
+  it("ignores a file that only starts with bg", () => {
+    const rom = romWithFiles([makeFile({ file_name: "bgm.png" })]);
+
+    expect(localRomBackground(rom)).toBeNull();
   });
 });
