@@ -8,7 +8,7 @@ from tests.factories import make_platform, make_rom
 from handler.scan.sources import ScanType
 from handler.scan_handler import scan_rom
 from models.platform import Platform
-from models.rom import Rom
+from models.rom import Rom, RomFile
 from utils.context import initialize_context
 
 
@@ -41,6 +41,9 @@ async def run_scan(
     *,
     scan_type: ScanType,
     metadata_sources: list[str],
+    flat: bool = True,
+    files: list[RomFile] | None = None,
+    newly_added: bool = False,
 ) -> Rom:
     """Scan `rom` with no files on disk, so only the name-based lookups run."""
     async with initialize_context():
@@ -51,13 +54,13 @@ async def run_scan(
             fs_rom={
                 "fs_name": rom.fs_name,
                 "fs_path": rom.fs_path,
-                "flat": True,
-                "files": [],
+                "flat": flat,
+                "files": files or [],
                 "crc_hash": "",
                 "md5_hash": "",
                 "sha1_hash": "",
                 "ra_hash": "",
             },
             metadata_sources=metadata_sources,
-            newly_added=False,
+            newly_added=newly_added,
         )

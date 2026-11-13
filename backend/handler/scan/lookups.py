@@ -53,6 +53,7 @@ from handler.metadata.ss_handler import (
     note_rate_limited_rom,
 )
 from handler.metadata.steam_handler import SteamRom
+from handler.scan.merge import folder_game_search_name
 from handler.scan.sources import (
     LOGGER_MODULE_NAME,
     RESCAN_RULES,
@@ -239,6 +240,14 @@ class RomLookups:
         """Files used for hash-based metadata matching, fetched at most once."""
         return self.fs_rom["files"] or db_rom_handler.rom_files_for_rom_id(self.rom.id)
 
+    @functools.cached_property
+    def search_name(self) -> str:
+        """The name providers are queried with: a folder game's main file, else its folder."""
+        folder = str(self.rom_attrs["fs_name"])
+        if self.fs_rom["flat"] or not cm.get_config().SCAN_FOLDER_GAME_NAMES:
+            return folder
+        return folder_game_search_name(self.match_files, folder)
+
     def stored_id(self, source: MetadataSource) -> Any:
         return stored_match_id(source, scan_type=self.scan_type, rom=self.rom)
 
@@ -322,7 +331,7 @@ class RomLookups:
             )
             return await lookup_by_file_name(
                 MetadataSource.IGDB,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_igdb_handler.get_rom(
                     self.rom, name, platform_igdb_id
                 ),
@@ -345,7 +354,7 @@ class RomLookups:
                 return await meta_flashpoint_handler.get_rom_by_id(flashpoint_id)
             return await lookup_by_file_name(
                 MetadataSource.FLASHPOINT,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_flashpoint_handler.get_rom(name, self.platform.slug),
             )
 
@@ -354,7 +363,7 @@ class RomLookups:
     async def fetch_libretro_rom(self) -> LibretroRom:
         if self.attempts(MetadataSource.LIBRETRO):
             return await meta_libretro_handler.get_rom(
-                self.rom_attrs["fs_name"], self.platform.slug
+                self.search_name, self.platform.slug
             )
 
         return LibretroRom(libretro_id=None)
@@ -367,7 +376,7 @@ class RomLookups:
 
             return await lookup_by_file_name(
                 MetadataSource.HLTB,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_hltb_handler.get_rom(name, self.platform.slug),
             )
 
@@ -380,7 +389,7 @@ class RomLookups:
                 return await meta_demozoo_handler.get_rom_by_id(demozoo_id)
             return await lookup_by_file_name(
                 MetadataSource.DEMOZOO,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_demozoo_handler.get_rom(name, self.platform.slug),
             )
         return DemozooRom(demozoo_id=None)
@@ -391,7 +400,7 @@ class RomLookups:
                 return await meta_pouet_handler.get_rom_by_id(int(self.rom.pouet_id))
             return await lookup_by_file_name(
                 MetadataSource.POUET,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_pouet_handler.get_rom(name, self.platform.slug),
             )
         return PouetRom(pouet_id=None)
@@ -401,16 +410,14 @@ class RomLookups:
             if self.rom.csdb_id:
                 return await meta_csdb_handler.get_rom_by_id(int(self.rom.csdb_id))
             # CSDb only matches a (csdb-N) tag, which every title shares.
-            return await meta_csdb_handler.get_rom(
-                self.rom_attrs["fs_name"], self.platform.slug
-            )
+            return await meta_csdb_handler.get_rom(self.search_name, self.platform.slug)
         return CsdbRom(csdb_id=None)
 
     async def fetch_steam_rom(self) -> SteamRom:
         if self.attempts(MetadataSource.STEAM):
             return await resolve_steam_rom(
                 rom=self.rom,
-                fs_name=str(self.rom_attrs["fs_name"]),
+                fs_name=self.search_name,
                 platform_slug=self.platform.slug,
                 scan_type=self.scan_type,
             )
@@ -434,7 +441,7 @@ class RomLookups:
             platform_moby_id = self.platform.moby_id
             return await lookup_by_file_name(
                 MetadataSource.MOBY,
-                self.rom_attrs["fs_name"],
+                self.search_name,
                 lambda name: meta_moby_handler.get_rom(
                     self.rom, name, platform_moby_id=platform_moby_id
                 ),
@@ -484,7 +491,7 @@ class RomLookups:
                 platform_ss_id = self.platform.ss_id
                 return await lookup_by_file_name(
                     MetadataSource.SS,
-                    self.rom_attrs["fs_name"],
+                    self.search_name,
                     lambda name: meta_ss_handler.get_rom(
                         self.rom, name, platform_ss_id=platform_ss_id
                     ),
@@ -510,7 +517,7 @@ class RomLookups:
         if self.attempts(MetadataSource.LAUNCHBOX):
             launchbox_rom = await resolve_launchbox_rom(
                 rom=self.rom,
-                fs_name=str(self.rom_attrs["fs_name"]),
+                fs_name=self.search_name,
                 platform_slug=self.platform.slug,
                 scan_type=self.scan_type,
                 playmatch_rom=playmatch_rom,
@@ -571,7 +578,7 @@ class RomLookups:
             )
             return await meta_sgdb_handler.get_rom_by_id(playmatch_rom["sgdb_id"])
 
-        fs_name = str(self.rom_attrs["fs_name"])
+        fs_name = self.search_name
         file_names_no_tags = [
             fs_rom_handler.get_file_name_with_no_tags(fs_name),
             *fs_rom_handler.get_titles(fs_name),

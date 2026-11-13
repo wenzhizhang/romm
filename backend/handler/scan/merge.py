@@ -1,8 +1,10 @@
 """Merging the metadata sources' answers into a rom's columns."""
 
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
+from pathlib import Path
 from typing import Any, Final
 
+from config.config_manager import config_manager as cm
 from handler.filesystem import fs_rom_handler
 from handler.filesystem.roms_handler import FSRom
 from handler.metadata.demozoo_handler import (
@@ -31,9 +33,69 @@ from handler.scan.sources import (
 from logger.formatter import highlight as hl
 from logger.logger import log
 from models.platform import Platform
-from models.rom import PROVIDER_METADATA_COLUMNS, Rom, RomIdentity
+from models.rom import (
+    PROVIDER_METADATA_COLUMNS,
+    Rom,
+    RomFile,
+    RomFileCategory,
+    RomIdentity,
+)
+from utils.media_types import (
+    ALLOWED_DOCUMENT_EXTENSIONS,
+    ALLOWED_IMAGE_EXTENSIONS,
+    ALLOWED_VIDEO_EXTENSIONS,
+)
 
 ARTWORK_FIELDS: Final = ("url_cover", "url_screenshots", "url_manual")
+
+# Files that sit beside a game without being it, like a cover or a manual.
+SIDE_CAR_EXTENSIONS: Final = (
+    ALLOWED_DOCUMENT_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
+)
+
+
+def folder_game_search_name(files: Sequence[RomFile], folder: str) -> str:
+    """The main game file's name, which is what providers are queried with."""
+    candidates = [
+        file for file in files if file.category in (None, RomFileCategory.GAME)
+    ]
+    if not candidates:
+        return folder
+    main_file = max(
+        candidates,
+        key=lambda file: (
+            Path(file.file_name).suffix.lower() not in SIDE_CAR_EXTENSIONS,
+            file.file_size_bytes,
+        ),
+    )
+    return fs_rom_handler.get_file_name_with_no_tags(main_file.file_name)
+
+
+def folder_game_title(folder: str, search_name: str) -> str | None:
+    """Title a folder game "<folder> | <file>", or None when they already agree."""
+    if not search_name or search_name == folder:
+        return None
+    return f"{folder} | {search_name}"
+
+
+def apply_folder_game_title(
+    rom_attrs: dict[str, Any],
+    fs_rom: FSRom,
+    search_name: str,
+    *,
+    newly_added: bool,
+    scan_type: ScanType,
+) -> None:
+    """Title a folder game "<folder> | <file>", keeping an edited title on a rescan."""
+    if (
+        fs_rom["flat"]
+        or not (newly_added or scan_type == ScanType.COMPLETE)
+        or not cm.get_config().SCAN_FOLDER_GAME_NAMES
+    ):
+        return
+    title = folder_game_title(str(rom_attrs["fs_name"]), search_name)
+    if title:
+        rom_attrs["name"] = title
 
 
 def hash_source_tags(

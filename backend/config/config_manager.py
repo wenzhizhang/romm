@@ -550,6 +550,9 @@ class Config:
     SCAN_LANGUAGE_PRIORITY: list[str]
     SORT_ARTICLES: list[str]
     SCAN_MEDIA: list[str]
+    # Folder games: search providers with the main file's name and title the
+    # game "<folder> | <file>", for libraries with localized folder names.
+    SCAN_FOLDER_GAME_NAMES: bool
     GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType
     GAMELIST_MEDIA_IMAGE: MetadataMediaType
     STREAMING_ENABLED: bool
@@ -913,6 +916,9 @@ class ConfigManager:
                     "screenshot",
                     "manual",
                 ],
+            ),
+            SCAN_FOLDER_GAME_NAMES=get_nested(
+                self._raw_config, "scan.folder_game_names", False
             ),
             GAMELIST_AUTO_EXPORT_ON_SCAN=get_nested(
                 self._raw_config, "scan.gamelist.export", False
@@ -1531,6 +1537,7 @@ class ConfigManager:
                     "language": self.config.SCAN_LANGUAGE_PRIORITY,
                 },
                 "media": self.config.SCAN_MEDIA,
+                "folder_game_names": self.config.SCAN_FOLDER_GAME_NAMES,
                 "gamelist": {
                     "export": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
                     "media": {

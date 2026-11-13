@@ -2046,6 +2046,7 @@ scan:
     region: ["us", "eu", "jp"]
     language: ["en", "es", "ja"]
   media: ["box2d", "screenshot", "manual"]
+  folder_game_names: false # Folder games: search by the main file, title "<folder> | <file>"
   export_gamelist: false
 
 emulatorjs:

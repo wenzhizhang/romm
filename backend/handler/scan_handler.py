@@ -51,6 +51,7 @@ from handler.metadata.steam_handler import SteamRom
 from handler.scan.lookups import RomLookups
 from handler.scan.merge import (
     apply_artwork_priority,
+    apply_folder_game_title,
     apply_metadata_priority,
     apply_sgdb_match,
     build_metadata_handlers,
@@ -497,6 +498,15 @@ async def scan_rom(
         )
         if pico8_url:
             rom_attrs["url_cover"] = pico8_url
+
+    # A localized folder name hides the release name from the providers.
+    apply_folder_game_title(
+        rom_attrs,
+        fs_rom,
+        lookups.search_name,
+        newly_added=newly_added,
+        scan_type=scan_type,
+    )
 
     # If not found in any metadata source, we return the rom with the default values
     if not any(
