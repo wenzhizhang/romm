@@ -553,8 +553,7 @@ class Config:
     # Folder games: search providers with the main file's name and title the
     # game "<folder> | <file>", for libraries with localized folder names.
     SCAN_FOLDER_GAME_NAMES: bool
-    # Folder games: use the cover/bg/logo images the folder carries itself
-    # instead of fetching them from the metadata providers.
+    # Folder games: use the cover the folder carries itself over the fetched one.
     SCAN_FOLDER_GAME_MEDIA: bool
     GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType
     GAMELIST_MEDIA_IMAGE: MetadataMediaType

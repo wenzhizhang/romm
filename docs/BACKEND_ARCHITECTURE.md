@@ -2047,7 +2047,7 @@ scan:
     language: ["en", "es", "ja"]
   media: ["box2d", "screenshot", "manual"]
   folder_game_names: false # Folder games: search by the main file, title "<folder> | <file>"
-  folder_game_media: false # Folder games: use the folder's own cover/bg/logo instead of fetching
+  folder_game_media: false # Folder games: use the folder's own cover over the fetched one
   export_gamelist: false
 
 emulatorjs:

@@ -98,47 +98,27 @@ def apply_folder_game_title(
         rom_attrs["name"] = title
 
 
-# Artwork a game folder carries itself, named by the file stem.
-FOLDER_MEDIA_STEMS: Final = ("cover", "bg", "logo")
-
-
-def folder_game_media(files: Sequence[RomFile], folder_path: str) -> dict[str, str]:
-    """The artwork a folder game carries in its own folder, as file:// urls."""
-    media: dict[str, str] = {}
+def folder_game_cover(files: Sequence[RomFile], folder_path: str) -> str | None:
+    """The cover a folder game carries in its own folder, as a file:// url."""
     for file in files:
-        stem = Path(file.file_name).stem.lower()
         if (
-            file.file_path != folder_path
-            or stem not in FOLDER_MEDIA_STEMS
-            or stem in media
-            or Path(file.file_name).suffix.lower() not in ALLOWED_IMAGE_EXTENSIONS
+            file.file_path == folder_path
+            and Path(file.file_name).stem.lower() == "cover"
+            and Path(file.file_name).suffix.lower() in ALLOWED_IMAGE_EXTENSIONS
         ):
-            continue
-        media[stem] = f"file://{file.file_path}/{file.file_name}"
-    return media
+            return f"file://{file.file_path}/{file.file_name}"
+    return None
 
 
-def apply_folder_game_media(
+def apply_folder_game_cover(
     rom_attrs: dict[str, Any], fs_rom: FSRom, files: Sequence[RomFile]
 ) -> None:
-    """Use a folder game's own cover, background and logo over the fetched ones."""
+    """Use a folder game's own cover over the fetched one."""
     if fs_rom["flat"] or not cm.get_config().SCAN_FOLDER_GAME_MEDIA:
         return
-    media = folder_game_media(files, f"{fs_rom['fs_path']}/{fs_rom['fs_name']}")
-    if not media:
-        return
-    if "cover" in media:
-        rom_attrs["url_cover"] = media["cover"]
-    # A local background or logo stands in for the provider's, whose url and path
-    # are dropped so it is neither fetched nor left beside the local file.
-    for role, field in (("bg", "fanart"), ("logo", "logo")):
-        if role not in media:
-            continue
-        for column in PROVIDER_METADATA_COLUMNS:
-            blob = rom_attrs.get(column)
-            if isinstance(blob, dict):
-                blob[f"{field}_url"] = None
-                blob[f"{field}_path"] = None
+    cover = folder_game_cover(files, f"{fs_rom['fs_path']}/{fs_rom['fs_name']}")
+    if cover:
+        rom_attrs["url_cover"] = cover
 
 
 def hash_source_tags(
