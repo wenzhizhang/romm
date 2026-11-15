@@ -340,6 +340,26 @@ class TestLookupRom:
         assert request.await_count == 3
 
     @pytest.mark.asyncio
+    async def test_the_notgame_placeholder_is_not_a_match(self):
+        # Hasheous answers every unknown dump with this entry, so its id would
+        # otherwise group unrelated games under one card.
+        placeholder = {
+            "id": 605387,
+            "name": "ZZZ",
+            "signatures": {
+                "ScreenScraper": [
+                    {"game": {"name": "ZZZ(notgame):#NONGAME", "roms": []}}
+                ]
+            },
+        }
+        rom, conclusive = await self._lookup(
+            [_rom_file("disc1", 700)], AsyncMock(return_value=placeholder)
+        )
+
+        assert conclusive
+        assert rom["hasheous_id"] is None
+
+    @pytest.mark.asyncio
     async def test_a_failed_retry_is_inconclusive(self):
         request = AsyncMock(side_effect=[{}, unavailable("Hasheous")])
         rom, conclusive = await self._lookup(

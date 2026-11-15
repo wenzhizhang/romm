@@ -128,6 +128,16 @@ def _tags_from_signatures(
     return []
 
 
+def _is_notgame(rom: dict[str, Any]) -> bool:
+    """Whether Hasheous answered with its placeholder for a dump it doesn't know.
+
+    The entry is named "ZZZ" and its ScreenScraper signature is
+    `ZZZ(notgame):#NONGAME`. Taking it as a match gives every unknown dump the
+    same id, which the gallery's metadata grouping then shows as one game.
+    """
+    return str(rom.get("name") or "").strip().upper() == "ZZZ"
+
+
 def _numeric_id(value: object) -> int | None:
     """A provider id Hasheous maps to, or None for a slug or anything else."""
     if value is None:
@@ -421,7 +431,7 @@ class HasheousHandler(MetadataHandler):
         if per_file_games:
             hasheous_game = next(iter(per_file_games.values()))
 
-        if not hasheous_game:
+        if not hasheous_game or _is_notgame(hasheous_game):
             return fallback_rom, True
 
         # A raise here would abort the scan.
