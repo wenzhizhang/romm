@@ -189,6 +189,8 @@
   "save-state": "Sparläge",
   "save-sync-refused": "Servern avvisade sparfilen för {game}: {reason}. Den behålls inte längre i webbläsaren.",
   "save-synced": "Sparfilen har synkroniserats med servern",
+  "scale": "Skala",
+  "scale-auto": "Automatiskt",
   "select-background-color": "Välj bakgrundsfärg",
   "session-ended": "Din strömningssession har avslutats.",
   "session-ended-by": "En administratör ({user}) avslutade din strömningssession.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Byt skiva",
   "sync-save": "Synkronisera sparfil",
   "unmute": "Sätt på ljud",
-  "upload-memory-card": "Ladda upp kort"
+  "upload-memory-card": "Ladda upp kort",
+  "windowed": "Fönster"
 }

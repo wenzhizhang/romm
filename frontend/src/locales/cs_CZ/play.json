@@ -189,6 +189,8 @@
   "save-state": "Uložit stav",
   "save-sync-refused": "Server odmítl uloženou pozici, kterou jsme měli pro {game}: {reason}. Už není uložena v tomto prohlížeči.",
   "save-synced": "Uložená pozice synchronizována se serverem",
+  "scale": "Měřítko",
+  "scale-auto": "Automaticky",
   "select-background-color": "Vybrat barvu pozadí",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Výměna disku",
   "sync-save": "Synchronizovat uloženou pozici",
   "unmute": "Zapnout zvuk",
-  "upload-memory-card": "Nahrát kartu"
+  "upload-memory-card": "Nahrát kartu",
+  "windowed": "V okně"
 }

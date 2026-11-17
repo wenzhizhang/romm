@@ -189,6 +189,8 @@
   "save-state": "Sauvegarder l'état",
   "save-sync-refused": "Le serveur a refusé la sauvegarde conservée pour {game} : {reason}. Elle n'est plus conservée dans ce navigateur.",
   "save-synced": "Sauvegarde synchronisée avec le serveur",
+  "scale": "Échelle",
+  "scale-auto": "Automatique",
   "select-background-color": "Sélectionner la couleur d'arrière-plan",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Changer de disque",
   "sync-save": "Synchroniser la sauvegarde",
   "unmute": "Réactiver le son",
-  "upload-memory-card": "Envoyer une carte"
+  "upload-memory-card": "Envoyer une carte",
+  "windowed": "Fenêtré"
 }

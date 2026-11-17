@@ -189,6 +189,8 @@
   "save-state": "Állapot mentése",
   "save-sync-refused": "A kiszolgáló elutasította a(z) {game} megőrzött mentését: {reason}. Már nem tárolódik ebben a böngészőben.",
   "save-synced": "Mentés szinkronizálva a kiszolgálóval",
+  "scale": "Méretarány",
+  "scale-auto": "Automatikus",
   "select-background-color": "Háttérszín kiválasztása",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Lemezcsere",
   "sync-save": "Mentés szinkronizálása",
   "unmute": "Hang bekapcsolása",
-  "upload-memory-card": "Kártya feltöltése"
+  "upload-memory-card": "Kártya feltöltése",
+  "windowed": "Ablakos"
 }

@@ -189,6 +189,8 @@
   "save-state": "ステートをセーブ",
   "save-sync-refused": "サーバーが {game} の保存していたセーブデータを拒否しました: {reason}。このブラウザーには残りません。",
   "save-synced": "セーブデータをサーバーと同期しました",
+  "scale": "拡大率",
+  "scale-auto": "自動",
   "select-background-color": "背景色を選択",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "ディスクの交換",
   "sync-save": "セーブデータを同期",
   "unmute": "ミュート解除",
-  "upload-memory-card": "カードをアップロード"
+  "upload-memory-card": "カードをアップロード",
+  "windowed": "ウィンドウ表示"
 }

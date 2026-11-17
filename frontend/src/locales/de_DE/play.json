@@ -189,6 +189,8 @@
   "save-state": "Spielstand speichern",
   "save-sync-refused": "Der Server hat den aufbewahrten Spielstand für {game} abgelehnt: {reason}. Er wird in diesem Browser nicht mehr aufbewahrt.",
   "save-synced": "Spielstand mit dem Server synchronisiert",
+  "scale": "Skalierung",
+  "scale-auto": "Automatisch",
   "select-background-color": "Hintergrundfarbe auswählen",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Disc wechseln",
   "sync-save": "Spielstand synchronisieren",
   "unmute": "Ton einschalten",
-  "upload-memory-card": "Karte hochladen"
+  "upload-memory-card": "Karte hochladen",
+  "windowed": "Fenstermodus"
 }

@@ -389,12 +389,14 @@ describe("EmulatorJS launch screen — what the setup panel claims", () => {
     // In the order the panel renders them, which is the order they are read in.
     expect(note).toEqual([
       "play.native-applies:rom.file, common.core, and play.full-screen",
+      "play.native-browser-only:play.windowed and play.scale",
     ]);
   });
 
   it("claims only the core on a shell that cannot take the rest", async () => {
     expect(noteLines(await launchScreen())).toEqual([
       "play.native-applies:common.core",
+      "play.native-browser-only:play.windowed and play.scale",
     ]);
   });
 
@@ -406,6 +408,7 @@ describe("EmulatorJS launch screen — what the setup panel claims", () => {
 
     expect(noteLines(await launchScreen())).toEqual([
       "play.native-applies:common.core",
+      "play.native-browser-only:play.windowed and play.scale",
     ]);
   });
 
@@ -422,7 +425,7 @@ describe("EmulatorJS launch screen — what the setup panel claims", () => {
     mocks.getFirmware.mockResolvedValue({ data: FIRMWARE_SET });
 
     expect(noteLines(await launchScreen())).toEqual([
-      "play.native-browser-only:common.firmware",
+      "play.native-browser-only:common.firmware, play.windowed, and play.scale",
     ]);
   });
 
@@ -431,7 +434,7 @@ describe("EmulatorJS launch screen — what the setup panel claims", () => {
     mocks.getRom.mockResolvedValue({ data: BEZELED_ROM });
 
     expect(noteLines(await launchScreen())).toEqual([
-      "play.native-browser-only:play.show-bezel",
+      "play.native-browser-only:play.windowed, play.scale, and play.show-bezel",
     ]);
   });
 
@@ -443,16 +446,18 @@ describe("EmulatorJS launch screen — what the setup panel claims", () => {
 
     expect(noteLines(await launchScreen())).toEqual([
       "play.native-applies:common.core",
-      "play.native-browser-only:common.firmware and play.show-bezel",
+      "play.native-browser-only:common.firmware, play.windowed, play.scale, and play.show-bezel",
     ]);
   });
 
-  // Nothing on screen carries over and nothing on it is EmulatorJS' own: one
-  // core, one file, the full-screen switch, and no bezel or BIOS to name.
-  it("says nothing when the panel offers nothing to choose", async () => {
+  // The window and the scale are always on screen, so a panel with nothing
+  // else to choose still says that much rather than reading as fully shared.
+  it("names the picture controls even when nothing else is on the panel", async () => {
     mocks.cores = ["mgba"];
 
-    expect(noteLines(await launchScreen())).toEqual([]);
+    expect(noteLines(await launchScreen())).toEqual([
+      "play.native-browser-only:play.windowed and play.scale",
+    ]);
   });
 });
 

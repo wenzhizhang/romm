@@ -189,6 +189,8 @@
   "save-state": "Salvează starea",
   "save-sync-refused": "Serverul a refuzat salvarea păstrată pentru {game}: {reason}. Nu mai este păstrată în acest browser.",
   "save-synced": "Salvare sincronizată cu serverul",
+  "scale": "Scară",
+  "scale-auto": "Automat",
   "select-background-color": "Selectează culoarea de fundal",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Schimbarea discului",
   "sync-save": "Sincronizează salvarea",
   "unmute": "Activează sunetul",
-  "upload-memory-card": "Încarcă un card"
+  "upload-memory-card": "Încarcă un card",
+  "windowed": "Fereastră"
 }

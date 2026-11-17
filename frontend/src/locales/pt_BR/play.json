@@ -189,6 +189,8 @@
   "save-state": "Salvar estado",
   "save-sync-refused": "O servidor recusou o save que estava guardado de {game}: {reason}. Ele não fica mais neste navegador.",
   "save-synced": "Save sincronizado com o servidor",
+  "scale": "Escala",
+  "scale-auto": "Automático",
   "select-background-color": "Selecionar cor de fundo",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Trocar disco",
   "sync-save": "Sincronizar save",
   "unmute": "Ativar som",
-  "upload-memory-card": "Enviar cartão"
+  "upload-memory-card": "Enviar cartão",
+  "windowed": "Janela"
 }

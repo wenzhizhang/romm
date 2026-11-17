@@ -189,6 +189,8 @@
   "save-state": "Guardar estado",
   "save-sync-refused": "El servidor ha rechazado la partida guardada que se conservaba de {game}: {reason}. Ya no se conserva en este navegador.",
   "save-synced": "Partida guardada sincronizada con el servidor",
+  "scale": "Escala",
+  "scale-auto": "Automático",
   "select-background-color": "Seleccionar color de fondo",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Cambiar disco",
   "sync-save": "Sincronizar partida",
   "unmute": "Activar sonido",
-  "upload-memory-card": "Subir tarjeta"
+  "upload-memory-card": "Subir tarjeta",
+  "windowed": "Ventana"
 }

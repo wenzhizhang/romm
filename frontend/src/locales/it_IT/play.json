@@ -189,6 +189,8 @@
   "save-state": "Salva stato",
   "save-sync-refused": "Il server ha rifiutato il salvataggio conservato per {game}: {reason}. Non è più conservato in questo browser.",
   "save-synced": "Salvataggio sincronizzato con il server",
+  "scale": "Scala",
+  "scale-auto": "Automatico",
   "select-background-color": "Seleziona colore di sfondo",
   "session-ended": "La tua sessione di streaming è stata terminata.",
   "session-ended-by": "Un amministratore ({user}) ha terminato la tua sessione di streaming.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Cambia disco",
   "sync-save": "Sincronizza salvataggio",
   "unmute": "Riattiva audio",
-  "upload-memory-card": "Carica card"
+  "upload-memory-card": "Carica card",
+  "windowed": "Finestra"
 }

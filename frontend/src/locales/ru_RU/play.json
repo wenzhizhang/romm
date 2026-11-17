@@ -189,6 +189,8 @@
   "save-state": "Сохранить состояние",
   "save-sync-refused": "Сервер отклонил сохранение, которое хранилось для {game}: {reason}. Оно больше не хранится в этом браузере.",
   "save-synced": "Сохранение синхронизировано с сервером",
+  "scale": "Масштаб",
+  "scale-auto": "Авто",
   "select-background-color": "Выбрать цвет фона",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Смена диска",
   "sync-save": "Синхронизировать сохранение",
   "unmute": "Включить звук",
-  "upload-memory-card": "Загрузить карту"
+  "upload-memory-card": "Загрузить карту",
+  "windowed": "В окне"
 }

@@ -189,6 +189,8 @@
   "save-state": "Save state",
   "save-sync-refused": "The server refused the save held for {game}: {reason}. It is no longer kept in this browser.",
   "save-synced": "Save synced with server",
+  "scale": "Scale",
+  "scale-auto": "Auto",
   "select-background-color": "Select background colour",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Swap disc",
   "sync-save": "Sync save",
   "unmute": "Unmute",
-  "upload-memory-card": "Upload card"
+  "upload-memory-card": "Upload card",
+  "windowed": "Windowed"
 }

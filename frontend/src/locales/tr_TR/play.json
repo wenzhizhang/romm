@@ -189,6 +189,8 @@
   "save-state": "Durumu kaydet",
   "save-sync-refused": "Sunucu {game} için saklanan kaydı reddetti: {reason}. Artık bu tarayıcıda saklanmıyor.",
   "save-synced": "Kayıt sunucuyla eşitlendi",
+  "scale": "Ölçek",
+  "scale-auto": "Otomatik",
   "select-background-color": "Arka plan rengi seç",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Disk değiştirme",
   "sync-save": "Kaydı eşitle",
   "unmute": "Sesi aç",
-  "upload-memory-card": "Kart yükle"
+  "upload-memory-card": "Kart yükle",
+  "windowed": "Pencereli"
 }

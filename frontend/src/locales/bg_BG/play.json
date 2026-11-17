@@ -189,6 +189,8 @@
   "save-state": "Запазване на състояние",
   "save-sync-refused": "Сървърът отхвърли съхранения запис за {game}: {reason}. Той вече не се съхранява в този браузър.",
   "save-synced": "Записът е синхронизиран със сървъра",
+  "scale": "Мащаб",
+  "scale-auto": "Автоматично",
   "select-background-color": "Избери цвят на фона",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "Смяна на диск",
   "sync-save": "Синхронизирай записа",
   "unmute": "Включване на звука",
-  "upload-memory-card": "Качване на карта"
+  "upload-memory-card": "Качване на карта",
+  "windowed": "Прозорец"
 }

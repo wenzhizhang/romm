@@ -47,6 +47,7 @@ import {
 } from "@/composables/useIsolatedLaunch";
 import { usePlayFocus } from "@/composables/usePlayFocus";
 import { usePlaySession } from "@/composables/usePlaySession";
+import { usePlayerDisplayPref } from "@/composables/usePlayerDisplayPref";
 import { usePlayerExit } from "@/composables/usePlayerExit";
 import { usePlayerHero } from "@/composables/usePlayerHero";
 import { usePlayerNav } from "@/composables/usePlayerNav";
@@ -146,6 +147,12 @@ const configStore = storeConfig();
 const heartbeatStore = storeHeartbeat();
 const nativeStore = useNativeStore();
 const { fullscreenOnPlay } = useFullscreenPref();
+const { windowed, scale } = usePlayerDisplayPref();
+// Integer multiples of the game's own resolution, or the current stretch.
+const scaleItems = computed(() => [
+  { title: t("play.scale-auto"), value: "auto" },
+  ...[1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ title: `${n}x`, value: n })),
+]);
 useFullscreenFallback();
 const playSession = usePlaySession();
 
@@ -295,6 +302,14 @@ const showBezel = useUserLocalStorage(`player:${romId}:bezel`, true, {
   },
 });
 
+// The bezel is drawn to the stage, so it only lines up with a game that fills
+// it: a scaled or windowed picture is left unframed.
+const bezelShown = computed(() =>
+  scale.value === "auto" && !windowed.value && showBezel.value
+    ? bezelUrl.value
+    : null,
+);
+
 // When EmulatorJS enters fullscreen it promotes its own `#game` container to
 // the top layer, so a bezel that is merely a sibling would disappear. Track
 // that container here and teleport the bezel into it while fullscreen (#3939).
@@ -337,13 +352,14 @@ const nativeCarriedControls = computed(() => {
 });
 
 // The controls above that stay with the in-browser player, in the order they
-// are rendered. Both are EmulatorJS' own: the BIOS it loads into its core, and
-// the bezel it draws over the canvas.
+// are rendered. All four are EmulatorJS' own: the BIOS it loads into its core,
+// how it sizes and frames the picture, and the bezel it draws over it.
 const nativeBrowserOnlyControls = computed(() => {
   const browserOnly: string[] = [];
   if (firmwareOptions.value.length > 0) {
     browserOnly.push(t("common.firmware"));
   }
+  browserOnly.push(t("play.windowed"), t("play.scale"));
   if (bezelUrl.value) browserOnly.push(t("play.show-bezel"));
   return browserOnly;
 });
@@ -1051,6 +1067,16 @@ const saveSlot = computed(() => chosenSlot(slotChoice.value, customSlot.value));
             return-object
           />
           <RSwitch v-model="fullscreenOnPlay" :label="t('play.full-screen')" />
+          <RSwitch v-model="windowed" :label="t('play.windowed')" />
+          <RSelect
+            v-model="scale"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-arrow-expand-all"
+            hide-details
+            :label="t('play.scale')"
+            :items="scaleItems"
+          />
           <!-- Only offered when this game actually has a bezel, so the user can
                hide a bad / misaligned one that obscures the game (#3939). -->
           <RSwitch
@@ -1093,7 +1119,12 @@ const saveSlot = computed(() => chosenSlot(slotChoice.value, customSlot.value));
     </div>
 
     <!-- Running state -->
-    <div v-else-if="rom" ref="stageRef" class="r-ejs__stage">
+    <div
+      v-else-if="rom"
+      ref="stageRef"
+      class="r-ejs__stage"
+      :class="{ 'r-ejs__stage--window': windowed }"
+    >
       <Player
         ref="playerRef"
         :rom="rom"
@@ -1105,6 +1136,8 @@ const saveSlot = computed(() => chosenSlot(slotChoice.value, customSlot.value));
         :firmware="firmwareOptions"
         :core="selectedCore"
         :file-ids="bootRomFileIds"
+        :windowed="windowed"
+        :scale="scale"
       />
       <!-- Bezel overlay drawn around the game canvas. Purely decorative and
            click-through, so pointer events reach the emulator underneath. In
@@ -1112,8 +1145,8 @@ const saveSlot = computed(() => chosenSlot(slotChoice.value, customSlot.value));
            keeps framing the game; otherwise it renders here over the stage. -->
       <Teleport :to="bezelHost" :disabled="!bezelHost">
         <img
-          v-if="bezelUrl && showBezel"
-          :src="bezelUrl"
+          v-if="bezelShown"
+          :src="bezelShown"
           class="r-ejs__bezel"
           alt=""
           aria-hidden="true"
@@ -1434,6 +1467,23 @@ html[data-bp~="md-and-up"]
   inset: var(--r-stage-inset);
   background: var(--r-color-canvas-bg);
   z-index: 1;
+}
+
+/* Windowed: EmulatorJS' container is sized to the game by the player and
+   centred here, framed, instead of covering the stage. */
+.r-ejs__stage--window {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--r-space-4);
+  overflow: hidden;
+}
+
+.r-ejs__stage--window :deep(#game) {
+  flex: none;
+  border: 1px solid var(--r-color-border-strong);
+  border-radius: var(--r-radius-md);
+  overflow: hidden;
 }
 
 /* EmulatorJS parks its touch menu button 5px into the corner, which lands

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useEventListener } from "@vueuse/core";
 import type { Emitter } from "mitt";
 import { storeToRefs } from "pinia";
 import {
@@ -29,6 +30,7 @@ import storePlaying from "@/stores/playing";
 import storeRoms, { type DetailedRom } from "@/stores/roms";
 import type { Events } from "@/types/emitter";
 import { newest } from "@/utils/assets";
+import { canvasDisplaySize } from "@/utils/playerDisplay";
 import { leaveFullscreen } from "@/utils/playerFullscreen";
 import { browserDeviceId } from "@/utils/saveSync/browserDevice";
 import { bytesEqual, saveContentHash } from "@/utils/saveSync/hash";
@@ -84,6 +86,10 @@ const props = defineProps<{
   saveSlot?: string | null;
   /** Load State button label; the shell names the picker it opens. */
   loadStateLabel?: string;
+  /** Draw the game in a centred window instead of covering the stage. */
+  windowed?: boolean;
+  /** Multiple of the native resolution to draw at; `"auto"` fills the stage. */
+  scale?: number | "auto";
 }>();
 const romRef = ref<DetailedRom>(props.rom);
 // The save the session booted from, and the version this session has written
@@ -704,6 +710,71 @@ window.EJS_onSaveState = async function ({
   }
 };
 
+// EmulatorJS draws the canvas at 100%x100% of its container, which stretches
+// the game. A window, or an integer multiple of the native resolution, sizes
+// the canvas explicitly instead.
+const WINDOW_FRAME = 16;
+let displayRetry = 0;
+let displayRetries = 0;
+
+function applyDisplay() {
+  const emulator = window.EJS_emulator;
+  const game = document.getElementById("game");
+  const canvas = emulator?.canvas as HTMLCanvasElement | undefined;
+  if (!emulator || !game || !canvas) return;
+
+  // shortcut: the resolution is read on start, resize and scale changes, so a
+  // core that switches it mid-game keeps the old size until one of those.
+  const native = {
+    width: Number(emulator.gameManager?.getVideoDimensions("width")) || 0,
+    height: Number(emulator.gameManager?.getVideoDimensions("height")) || 0,
+  };
+  // The core reports its resolution a frame or two after the start hook.
+  if (!native.width || !native.height) {
+    if (displayRetries++ < 60)
+      displayRetry = requestAnimationFrame(applyDisplay);
+    return;
+  }
+  displayRetries = 0;
+
+  const stage = game.parentElement;
+  const windowed = props.windowed ?? false;
+  const size = canvasDisplaySize(
+    native,
+    props.scale ?? "auto",
+    {
+      width: (stage?.clientWidth ?? 0) - 2 * WINDOW_FRAME,
+      height: (stage?.clientHeight ?? 0) - 2 * WINDOW_FRAME,
+    },
+    windowed,
+  );
+
+  if (!size) {
+    canvas.removeAttribute("style");
+    game.style.width = "";
+    game.style.height = "";
+    return;
+  }
+
+  Object.assign(canvas.style, {
+    position: "absolute",
+    inset: "0",
+    margin: "auto",
+    width: `${size.width}px`,
+    height: `${size.height}px`,
+    maxWidth: "none",
+    maxHeight: "none",
+    imageRendering: "pixelated",
+  });
+  // The window hugs the game, so its frame follows the scale.
+  game.style.width = windowed ? `${size.width + 2 * WINDOW_FRAME}px` : "";
+  game.style.height = windowed ? `${size.height + 2 * WINDOW_FRAME}px` : "";
+}
+
+watch(() => [props.windowed, props.scale], applyDisplay);
+useEventListener(window, "resize", applyDisplay);
+onBeforeUnmount(() => cancelAnimationFrame(displayRetry));
+
 window.EJS_onGameStart = async () => {
   // EmulatorJS' own notices (its browser save-state slots) go through the
   // same host, so nothing of ours is overwritten by one of theirs.
@@ -712,6 +783,7 @@ window.EJS_onGameStart = async () => {
     emulator.displayMessage = (text: string, duration?: number) =>
       displayMessage(text, { duration: duration ?? 3000 });
   }
+  applyDisplay();
 
   if (props.state) holdBackUntilStateApplied();
   // The emulator now owns the keyboard: every key, "/" included, belongs to

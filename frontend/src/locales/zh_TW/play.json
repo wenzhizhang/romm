@@ -189,6 +189,8 @@
   "save-state": "儲存即時存檔",
   "save-sync-refused": "伺服器拒絕了 {game} 暫存的存檔：{reason}。它已從此瀏覽器中移除。",
   "save-synced": "存檔已與伺服器同步",
+  "scale": "縮放",
+  "scale-auto": "自動",
   "select-background-color": "選擇背景顏色",
   "session-ended": "Your streaming session has ended.",
   "session-ended-by": "An administrator ({user}) ended your streaming session.",
@@ -246,5 +248,6 @@
   "swap-disc-title": "更換光碟",
   "sync-save": "同步存檔",
   "unmute": "取消靜音",
-  "upload-memory-card": "上傳記憶卡"
+  "upload-memory-card": "上傳記憶卡",
+  "windowed": "視窗化"
 }

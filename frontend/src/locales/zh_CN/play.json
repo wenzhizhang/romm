@@ -189,6 +189,8 @@
   "save-state": "保存即时存档",
   "save-sync-refused": "服务器拒绝了 {game} 暂存的存档：{reason}。它已从此浏览器中移除。",
   "save-synced": "存档已与服务器同步",
+  "scale": "缩放",
+  "scale-auto": "自动",
   "select-background-color": "选择背景颜色",
   "session-ended": "您的串流会话已结束。",
   "session-ended-by": "管理员（{user}）结束了您的串流会话。",
@@ -246,5 +248,6 @@
   "swap-disc-title": "更换光盘",
   "sync-save": "同步存档",
   "unmute": "取消静音",
-  "upload-memory-card": "上传记忆卡"
+  "upload-memory-card": "上传记忆卡",
+  "windowed": "窗口化"
 }
