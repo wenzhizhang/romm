@@ -3,7 +3,7 @@ import mitt from "mitt";
 import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
-import { RBtn, RSelect } from "@/lib";
+import { RBtn, RSelect, RSwitch } from "@/lib";
 import type { DetailedRom } from "@/stores/roms";
 import { propOf } from "@/test-utils/propOf";
 import type { Events } from "@/types/emitter";
@@ -141,6 +141,16 @@ vi.mock("@/composables/useInputModality", async () => {
   return { useInputModality: () => ({ modality: ref("mouse") }) };
 });
 
+vi.mock("@/composables/usePlayerDisplayPref", async () => {
+  const { ref } = await import("vue");
+  return {
+    usePlayerDisplayPref: () => ({
+      windowed: ref(false),
+      scale: ref<number | "auto">("auto"),
+    }),
+  };
+});
+
 vi.mock("@/composables/usePlaySession", () => ({
   usePlaySession: () => ({ start: vi.fn(), flush: vi.fn() }),
 }));
@@ -276,6 +286,26 @@ beforeEach(() => {
 describe("EmulatorJS launch screen — play routes", () => {
   it("offers only the in-browser route outside the desktop shell", async () => {
     expect(playLabels(await launchScreen())).toEqual(["play.play"]);
+  });
+
+  // The two picture controls are always on offer, and the scale offers the
+  // stretch plus every integer multiple up to 8x.
+  it("offers the window and scale controls", async () => {
+    const wrapper = await launchScreen();
+    const switchLabels = wrapper
+      .findAllComponents(RSwitch)
+      .map((sw) => propOf(sw, "label"));
+    expect(switchLabels).toContain("play.windowed");
+
+    const scale = wrapper
+      .findAllComponents(RSelect)
+      .find((select) => propOf(select, "label") === "play.scale");
+    expect(scale).toBeDefined();
+    expect(
+      (propOf(scale!, "items") as { value: unknown }[]).map(
+        (item) => item.value,
+      ),
+    ).toEqual(["auto", 1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it("puts the native launch above the in-browser one, and names both", async () => {
