@@ -127,6 +127,9 @@ interface Props {
   /** Sort applied while the URL names none. `null` orders by search
    * relevance (Search). */
   defaultOrderBy?: GalleryOrderKey | null;
+  /** Game count of the unfiltered gallery, shown against the result count
+   *  while a search or filter narrows it. Unset hides the count. */
+  scopeTotal?: number | undefined;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -139,6 +142,7 @@ const props = withDefaults(defineProps<Props>(), {
   showPlatformsInFilter: true,
   showPlatformColumn: true,
   defaultOrderBy: DEFAULT_ORDER_BY,
+  scopeTotal: undefined,
 });
 
 defineSlots<{
@@ -307,6 +311,18 @@ const { supportsWebp } = useWebpSupport();
 
 const { total, charIndex, initialFetching, refreshing, orderBy, orderDir } =
   storeToRefs(galleryRoms);
+
+// A narrowed gallery shows how many of its games match inside the search field.
+const searchSuffix = computed(() =>
+  props.scopeTotal !== undefined &&
+  (filterActiveCount.value > 0 || searchTerm.value) &&
+  galleryRoms.metadataLoaded
+    ? t("gallery.results-of-total", {
+        count: total.value,
+        total: props.scopeTotal,
+      })
+    : undefined,
+);
 
 const { groupBy, layout, toolbarPosition } = useGalleryMode();
 
@@ -1067,6 +1083,7 @@ defineExpose({
               show-search
               :search="searchInput"
               :search-placeholder="searchPlaceholder"
+              :search-suffix="searchSuffix"
               :autofocus-search="autofocusSearch"
               show-filter
               :filter-active-count="filterActiveCount"
@@ -1305,6 +1322,12 @@ defineExpose({
   --r-shell-strip: calc(var(--r-alpha-strip-w) + var(--r-alpha-strip-gap));
   /* Where the right-anchored overlays sit: clear of the scrollbar and the inset. */
   --r-shell-edge-r: calc(var(--r-shell-scrollbar-w, 0px) + var(--r-safe-r));
+  /* The right gutter less the scrollbar it sits beside, so content ends where
+     the top bar and the document-scrolled pages do. */
+  --r-shell-pad-r: max(
+    0px,
+    calc(var(--r-gutter-r) - var(--r-shell-scrollbar-w, 0px))
+  );
   /* Lets the strip (a sibling) animate against the scroller's scroll. */
   timeline-scope: --r-shell-scroll;
   flex: 1;
@@ -1354,6 +1377,8 @@ html[data-bp~="sm-and-down"] .r-shell {
    class name is load-bearing in here. */
 html[data-bp~="sm-and-down"] .r-shell {
   --r-list-bleed: var(--r-row-pad);
+  /* The rows bleed by the full gutter, so a narrower pad would overflow it. */
+  --r-shell-pad-r: var(--r-gutter-r);
 }
 html[data-bp~="sm-and-down"] .r-shell__list-header {
   margin-inline: calc(-1 * var(--r-list-bleed, 0px));
@@ -1380,7 +1405,7 @@ html[data-bp~="md-and-up"] .r-shell__list-header {
   /* A stable gutter keeps the row packing from shifting when the content
      starts or stops overflowing. */
   scrollbar-gutter: stable;
-  padding: 0 calc(var(--r-gutter-r) + var(--r-shell-strip)) 60px
+  padding: 0 calc(var(--r-shell-pad-r) + var(--r-shell-strip)) 60px
     var(--r-gutter-l);
 }
 
@@ -1463,7 +1488,7 @@ html[data-bp~="md-and-up"] .r-shell__list-header {
 }
 /* Its pinned glass also runs under the strip column, out to the right edge. */
 .r-shell__list-header::before {
-  right: calc(-1 * (var(--r-gutter-r) + var(--r-shell-strip)));
+  right: calc(-1 * (var(--r-shell-pad-r) + var(--r-shell-strip)));
 }
 
 /* The strip overlays the scroller's right gutter from the pinned toolbar's
@@ -1529,7 +1554,7 @@ html[data-bp~="md-and-up"] .r-shell__list-header {
 }
 /* No strip: line up with the cards' right edge instead. */
 .r-shell--no-strip .r-shell__back-to-top {
-  right: calc(var(--r-row-pad) + var(--r-shell-edge-r));
+  right: calc(var(--r-shell-scrollbar-w, 0px) + var(--r-shell-pad-r));
 }
 html[data-bp~="sm-and-down"] .r-shell__back-to-top {
   bottom: calc(var(--r-bottom-nav-h) + var(--r-safe-b) + var(--r-space-4));
