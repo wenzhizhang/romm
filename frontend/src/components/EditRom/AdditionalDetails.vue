@@ -10,6 +10,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { RComboboxField, RDateField, RTextField } from "@/lib";
 import type { UpdateRom } from "@/services/api/rom";
+import { LANGUAGE_NAMES, REGION_NAMES } from "@/utils/romNameTags";
 
 const props = defineProps<{ rom: UpdateRom }>();
 
@@ -50,6 +51,34 @@ const GAME_MODE_ITEMS = computed(() => [
   t("rom.game-mode-split-screen"),
 ]);
 
+// IGDB's genre vocabulary, which is what the scraper writes.
+const GENRE_ITEMS = [
+  "Point-and-click",
+  "Fighting",
+  "Shooter",
+  "Music",
+  "Platform",
+  "Puzzle",
+  "Racing",
+  "Real Time Strategy (RTS)",
+  "Role-playing (RPG)",
+  "Simulator",
+  "Sport",
+  "Strategy",
+  "Turn-based strategy (TBS)",
+  "Tactical",
+  "Hack and slash/Beat 'em up",
+  "Quiz/Trivia",
+  "Pinball",
+  "Adventure",
+  "Arcade",
+  "Visual Novel",
+  "Indie",
+  "Card & Board Game",
+  "MOBA",
+  "Other",
+];
+
 const manual = computed(() => props.rom.manual_metadata || {});
 
 // Age ratings are stored as `SYSTEM:RATING` strings: convert to the
@@ -69,6 +98,10 @@ function updateManualMetadata(
       [field]: value,
     },
   });
+}
+
+function updateRomField(field: "languages" | "regions", value: string[]) {
+  emit("update:rom", { ...props.rom, [field]: value });
 }
 </script>
 
@@ -113,12 +146,33 @@ function updateManualMetadata(
     />
     <RComboboxField
       :model-value="manual.genres ?? []"
+      :items="GENRE_ITEMS"
       :label="t('rom.genres')"
       prefix-label="stacked"
       variant="outlined"
       density="comfortable"
       clearable
       @update:model-value="(v) => updateManualMetadata('genres', v)"
+    />
+    <RComboboxField
+      :model-value="rom.languages ?? []"
+      :items="LANGUAGE_NAMES"
+      :label="t('rom.languages')"
+      prefix-label="stacked"
+      variant="outlined"
+      density="comfortable"
+      clearable
+      @update:model-value="(v) => updateRomField('languages', v)"
+    />
+    <RComboboxField
+      :model-value="rom.regions ?? []"
+      :items="REGION_NAMES"
+      :label="t('rom.regions')"
+      prefix-label="stacked"
+      variant="outlined"
+      density="comfortable"
+      clearable
+      @update:model-value="(v) => updateRomField('regions', v)"
     />
     <RComboboxField
       :model-value="manual.franchises ?? []"

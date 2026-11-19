@@ -738,6 +738,8 @@ async function updateRom({
     ["csdb_id", toFormIdValue(rom.csdb_id)],
     ["steam_id", toFormIdValue(rom.steam_id)],
     ["libretro_id", toFormIdValue(rom.libretro_id)],
+    ["languages", JSON.stringify(rom.languages ?? [])],
+    ["regions", JSON.stringify(rom.regions ?? [])],
   ];
 
   if (rom.manual_metadata) {

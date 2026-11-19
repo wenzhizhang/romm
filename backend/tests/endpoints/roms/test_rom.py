@@ -1461,6 +1461,78 @@ def test_update_rom_adds_region_tag_on_rename(
     assert body["regions"] == ["Europe"]
 
 
+def test_update_rom_sets_languages_and_regions(
+    client: TestClient, access_token: str, rom: Rom
+):
+    response = client.put(
+        f"/api/roms/{rom.id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"languages": '["Chinese", "English"]', "regions": '["China"]'},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    body = response.json()
+    assert body["languages"] == ["Chinese", "English"]
+    assert body["regions"] == ["China"]
+
+    stored = db_rom_handler.get_rom(rom.id)
+    assert stored is not None
+    assert stored.locked_fields == ["languages", "regions"]
+
+
+def test_update_rom_clears_languages_and_releases_the_lock(
+    client: TestClient, access_token: str, rom: Rom
+):
+    with sync_session.begin() as session:
+        stored = session.get(Rom, rom.id)
+        assert stored is not None
+        stored.languages = ["Chinese"]
+        stored.locked_fields = ["languages"]
+
+    response = client.put(
+        f"/api/roms/{rom.id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"languages": "[]"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["languages"] == []
+
+    stored = db_rom_handler.get_rom(rom.id)
+    assert stored is not None
+    assert stored.locked_fields == []
+
+
+@patch.object(FSRomsHandler, "rename_fs_rom")
+@patch.object(IGDBHandler, "get_rom_by_id", return_value=IGDBRom(igdb_id=None))
+def test_update_rom_rename_hands_languages_back_to_the_filename(
+    rename_fs_rom_mock: AsyncMock,
+    get_rom_by_id_mock: AsyncMock,
+    client: TestClient,
+    access_token: str,
+    rom: Rom,
+):
+    with sync_session.begin() as session:
+        stored = session.get(Rom, rom.id)
+        assert stored is not None
+        stored.languages = ["Chinese"]
+        stored.locked_fields = ["languages"]
+
+    response = client.put(
+        f"/api/roms/{rom.id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"fs_name": "test_rom (Europe) (En).zip", "languages": '["Chinese"]'},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    body = response.json()
+    assert body["languages"] == ["English"]
+    assert body["regions"] == ["Europe"]
+
+    stored = db_rom_handler.get_rom(rom.id)
+    assert stored is not None
+    assert "languages" not in (stored.locked_fields or [])
+
+
 @patch.object(FSRomsHandler, "rename_fs_rom")
 @patch.object(IGDBHandler, "get_rom_by_id", return_value=IGDBRom(igdb_id=None))
 def test_update_rom_refreshes_smart_collection_membership(

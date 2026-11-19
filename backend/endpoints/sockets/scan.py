@@ -733,8 +733,10 @@ async def _identify_rom(
     # forward from the rom it is handed, and merging its result is what persists
     # them.
     if not newly_added and _should_reparse_tags(scan_type, rom, roms_ids):
-        rom.regions = parsed_tags.regions
-        rom.languages = parsed_tags.languages
+        if not rom.is_field_locked("regions"):
+            rom.regions = parsed_tags.regions
+        if not rom.is_field_locked("languages"):
+            rom.languages = parsed_tags.languages
         rom.tags = parsed_tags.other_tags
         rom.revision = parsed_tags.revision
         rom.version = parsed_tags.version

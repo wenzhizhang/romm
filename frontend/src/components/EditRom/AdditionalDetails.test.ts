@@ -10,6 +10,7 @@ const RComboboxField = {
   props: {
     label: { type: String, default: "" },
     allowCommas: { type: Boolean, default: false },
+    items: { type: Array, default: () => [] },
   },
   emits: ["update:modelValue"],
   template: `<div />`,
@@ -30,6 +31,14 @@ function mountDetails(rom: UpdateRom) {
       stubs: { RComboboxField, RDateField: true, RTextField: true },
     },
   });
+}
+
+function fieldByLabel(wrapper: ReturnType<typeof mountDetails>, label: string) {
+  const field = wrapper
+    .findAllComponents(RComboboxField)
+    .find((c) => c.props("label") === label);
+  if (!field) throw new Error(`${label} field not rendered`);
+  return field;
 }
 
 describe("AdditionalDetails alternative titles", () => {
@@ -61,5 +70,42 @@ describe("AdditionalDetails alternative titles", () => {
     expect(wrapper.emitted("update:rom")?.[0]?.[0]).toMatchObject({
       manual_metadata: { alternative_names: [] },
     });
+  });
+});
+
+describe("AdditionalDetails languages and regions", () => {
+  it("writes a language onto the rom, not the manual metadata", async () => {
+    const wrapper = mountDetails(romFixture({ languages: ["English"] }));
+
+    await fieldByLabel(wrapper, "rom.languages").vm.$emit("update:modelValue", [
+      "Chinese",
+    ]);
+
+    expect(wrapper.emitted("update:rom")?.[0]?.[0]).toMatchObject({
+      languages: ["Chinese"],
+    });
+  });
+
+  it("writes a region onto the rom", async () => {
+    const wrapper = mountDetails(romFixture({ regions: ["USA"] }));
+
+    await fieldByLabel(wrapper, "rom.regions").vm.$emit("update:modelValue", [
+      "China",
+    ]);
+
+    expect(wrapper.emitted("update:rom")?.[0]?.[0]).toMatchObject({
+      regions: ["China"],
+    });
+  });
+
+  it("offers the canonical names as suggestions", () => {
+    const wrapper = mountDetails(romFixture({}));
+
+    expect(fieldByLabel(wrapper, "rom.languages").props("items")).toContain(
+      "Chinese",
+    );
+    expect(fieldByLabel(wrapper, "rom.regions").props("items")).toContain(
+      "China",
+    );
   });
 });

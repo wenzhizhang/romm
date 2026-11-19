@@ -353,6 +353,12 @@ class RomUpdateForm(BaseModel):
     fs_name: str | None = None
     url_cover: str | None = None
     url_manual: str | None = None
+    languages: list[str] | None = Field(
+        default=None, description="Canonical language names, replacing the parsed ones."
+    )
+    regions: list[str] | None = Field(
+        default=None, description="Canonical region names, replacing the parsed ones."
+    )
 
 
 MANUAL_METADATA_ADAPTER: Final = TypeAdapter(ManualMetadata)
@@ -373,6 +379,8 @@ _EDIT_AUDIT_FIELDS: Final[dict[str, tuple[str, ...]]] = {
     "summary": ("summary",),
     "cover": ("url_cover", "path_cover_l"),
     "manual": ("url_manual",),
+    "languages": ("languages",),
+    "regions": ("regions",),
 }
 
 
@@ -449,6 +457,25 @@ class RomUserData(BaseModel):
     )
 
 
+def _parse_string_list(raw: str | None, field: str) -> list[str] | None:
+    """Read the JSON array a form field carries, dropping blanks."""
+    if raw is None:
+        return None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Invalid {field}: {exc}",
+        ) from exc
+    if not isinstance(value, list):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Invalid {field}: expected a JSON array",
+        )
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
 async def parse_rom_update_form(
     request: Request,
     igdb_id: str | None = Form(default=None),
@@ -484,6 +511,8 @@ async def parse_rom_update_form(
     fs_name: str | None = Form(default=None),
     url_cover: str | None = Form(default=None),
     url_manual: str | None = Form(default=None),
+    languages: str | None = Form(default=None),
+    regions: str | None = Form(default=None),
 ) -> RomUpdateForm:
     # Preserve "field was provided" behavior used by update logic.
     form_keys = set((await request.form()).keys())
@@ -521,6 +550,8 @@ async def parse_rom_update_form(
         "fs_name": fs_name,
         "url_cover": url_cover,
         "url_manual": url_manual,
+        "languages": _parse_string_list(languages, "languages"),
+        "regions": _parse_string_list(regions, "regions"),
     }
 
     return RomUpdateForm.model_validate(
@@ -2228,6 +2259,25 @@ async def update_rom(
         for field in MATCH_ID_FIELDS
     }
 
+    # Cover, manual, languages and regions all take and release locks, so they
+    # accumulate into one running set rather than each deriving from the same
+    # pre-update state.
+    locked_fields = set(rom.locked_fields or [])
+
+    for field in ("regions", "languages"):
+        if field not in provided_fields:
+            continue
+        values = getattr(form_data, field) or []
+        # The form echoes the stored lists on every save, so only a real change
+        # counts as the user taking the field over from the filename.
+        if values == (getattr(rom, field) or []):
+            continue
+        cleaned_data[field] = values
+        if values:
+            locked_fields.add(field)
+        else:
+            locked_fields.discard(field)
+
     for form_key in _RAW_METADATA_FORM_KEYS:
         raw_metadata = parse_raw_metadata(form_data, form_key)
         provider = form_key.removeprefix("raw_").removesuffix("_metadata")
@@ -2327,11 +2377,12 @@ async def update_rom(
                 "version": parsed_tags.version,
             }
         )
+        # A renamed file owns its tags again.
+        locked_fields.discard("regions")
+        locked_fields.discard("languages")
 
     # Cover and manual both take and release locks, so they accumulate into one
     # running set rather than each deriving from the same pre-update state.
-    locked_fields = set(rom.locked_fields or [])
-
     if remove_cover:
         cleaned_data.update(await fs_resource_handler.remove_cover(rom))
         cleaned_data.update({"url_cover": ""})

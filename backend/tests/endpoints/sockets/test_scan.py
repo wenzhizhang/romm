@@ -950,6 +950,17 @@ class TestIdentifyRomTagReparse:
         # The mutated instance is the one carried onward, not a copy.
         assert patched.scan_rom.call_args.kwargs["rom"] is rom
 
+    async def test_complete_rescan_keeps_a_hand_set_language(self, patched):
+        rom = self._existing_rom()
+        rom.languages = ["Chinese"]
+        rom.regions = ["China"]
+        rom.locked_fields = ["languages", "regions"]
+
+        await self._run(rom, ScanType.COMPLETE, [])
+
+        assert rom.languages == ["Chinese"]
+        assert rom.regions == ["China"]
+
     async def test_hashes_rescan_keeps_existing_tags(self, patched):
         rom = self._existing_rom()
 
