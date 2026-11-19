@@ -13,6 +13,10 @@ from fastapi import UploadFile
 
 from config.config_manager import DEFAULT_EXCLUDED_FILES
 from handler.filesystem.base_handler import (
+    LANGUAGES,
+    PROVIDER_LANGUAGES,
+    REGIONS,
+    REGION_NAME_TO_PROVIDER_SHORTCODE,
     FSHandler,
     normalize_language,
     normalize_provider_languages,
@@ -998,3 +1002,27 @@ class TestProviderVocabularyCoverage:
     def test_a_provider_name_resolves_to_the_same_value_as_its_code(self):
         assert provider_region_name("Poland") == provider_region_name("pl")
         assert provider_language_name("czech") == provider_language_name("cs")
+
+
+class TestFrontendTagNames:
+    """The edit form hard-codes the names it suggests; drift splits the facets."""
+
+    @staticmethod
+    def _names(source: str, export: str) -> set[str]:
+        block = source.split(f"export const {export}: string[] = [", 1)[1]
+        return set(re.findall(r'"([^"]+)"', block.split("];", 1)[0]))
+
+    @staticmethod
+    def _source() -> str:
+        path = Path(__file__).parents[4] / "frontend/src/utils/romNameTags.ts"
+        return path.read_text(encoding="utf-8")
+
+    def test_the_language_suggestions_are_every_canonical_language(self):
+        assert self._names(self._source(), "LANGUAGE_NAMES") == {
+            name for _, name in (*LANGUAGES, *PROVIDER_LANGUAGES)
+        }
+
+    def test_the_region_suggestions_are_every_canonical_region(self):
+        assert self._names(self._source(), "REGION_NAMES") == {
+            name for _, name in REGIONS
+        } | set(REGION_NAME_TO_PROVIDER_SHORTCODE)

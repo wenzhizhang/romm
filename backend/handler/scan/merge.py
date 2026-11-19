@@ -387,6 +387,7 @@ def reset_rematched_sources(
     metadata_handlers: dict[MetadataSource, dict[str, Any]],
     attempted_sources: set[MetadataSource],
     metadata_sources: list[str],
+    rom: Rom,
 ) -> None:
     """Clear what a complete rescan rematches, so a miss undoes the old match."""
     # The consulted sources and the deselected ones are the ones it can rematch.
@@ -396,13 +397,18 @@ def reset_rematched_sources(
             if fields["metadata_field"]:
                 rom_attrs[fields["metadata_field"]] = {}
 
-    # Clear the sources and locks so whatever answers now can replace a file.
+    # Clear the sources and the media locks so whatever answers now can replace
+    # a file. A tag the user set by hand outlives the rescan.
     rom_attrs.update(
         {
             "url_cover": "",
             "url_screenshots": [],
             "url_manual": "",
-            "locked_fields": [],
+            "locked_fields": [
+                field
+                for field in (rom.locked_fields or [])
+                if field in PROVIDER_TAG_FIELDS
+            ],
         }
     )
 
@@ -582,8 +588,11 @@ def apply_metadata_priority(
     priority_ordered: list[MetadataSource],
 ) -> None:
     """Write each source's non-empty fields, the highest priority last."""
+    locked = set(rom_attrs.get("locked_fields") or [])
     for source_name in reversed(priority_ordered):
         for key, field_value in metadata_handlers[source_name]["handler"].items():
+            if key in PROVIDER_TAG_FIELDS and key in locked:
+                continue
             if (
                 key in PROVIDER_ALL_TAG_FIELDS
                 and source_name in HASH_MATCHED_TAG_SOURCES
@@ -615,6 +624,8 @@ def merge_tags(
     ]
 
     for field in PROVIDER_TAG_FIELDS:
+        if field in rom_attrs.get("locked_fields", ()):
+            continue
         if local_tags[field] or any(handler.get(field) for handler in catalog_handlers):
             continue
         for claims, answered in hash_claims:

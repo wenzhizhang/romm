@@ -99,6 +99,10 @@ from handler.database.roms_handler import (
 )
 from handler.filesystem import fs_resource_handler, fs_rom_handler
 from handler.filesystem.assets_handler import validate_image_upload
+from handler.filesystem.base_handler import (
+    normalize_provider_languages,
+    normalize_provider_regions,
+)
 from handler.filesystem.resources_handler import LOCAL_FILE_SCHEMES
 from handler.metadata import (
     meta_csdb_handler,
@@ -457,9 +461,9 @@ class RomUserData(BaseModel):
     )
 
 
-def _parse_string_list(raw: str | None, field: str) -> list[str] | None:
-    """Read the JSON array a form field carries, dropping blanks."""
-    if raw is None:
+def _parse_tag_list(raw: str | None, field: str) -> list[str] | None:
+    """Read the JSON array a form field carries, canonicalizing each name."""
+    if raw is None or not raw.strip():
         return None
     try:
         value = json.loads(raw)
@@ -473,7 +477,14 @@ def _parse_string_list(raw: str | None, field: str) -> list[str] | None:
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Invalid {field}: expected a JSON array",
         )
-    return [str(item).strip() for item in value if str(item).strip()]
+    # An unknown name is kept as typed, the way filename parsing keeps a tag
+    # it does not recognize.
+    normalize = (
+        normalize_provider_regions
+        if field == "regions"
+        else normalize_provider_languages
+    )
+    return normalize(str(item) for item in value)
 
 
 async def parse_rom_update_form(
@@ -550,8 +561,8 @@ async def parse_rom_update_form(
         "fs_name": fs_name,
         "url_cover": url_cover,
         "url_manual": url_manual,
-        "languages": _parse_string_list(languages, "languages"),
-        "regions": _parse_string_list(regions, "regions"),
+        "languages": _parse_tag_list(languages, "languages"),
+        "regions": _parse_tag_list(regions, "regions"),
     }
 
     return RomUpdateForm.model_validate(

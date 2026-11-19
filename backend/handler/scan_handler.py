@@ -449,7 +449,11 @@ async def scan_rom(
 
     if is_complete_rescan:
         reset_rematched_sources(
-            rom_attrs, metadata_handlers, lookups.attempted_sources, metadata_sources
+            rom_attrs,
+            metadata_handlers,
+            lookups.attempted_sources,
+            metadata_sources,
+            rom,
         )
 
     apply_sources, scene_locked = resolve_scene_lock(rom_attrs, metadata_handlers)

@@ -696,19 +696,21 @@ async def _identify_rom(
         )
         if missing_match is not None:
             # Move the existing entry onto the new file, clearing its missing state.
-            rom = db_rom_handler.update_rom(
-                missing_match.id,
-                {
-                    "fs_name": fs_rom["fs_name"],
-                    "fs_path": roms_path,
-                    "regions": parsed_tags.regions,
-                    "revision": parsed_tags.revision,
-                    "version": parsed_tags.version,
-                    "languages": parsed_tags.languages,
-                    "tags": parsed_tags.other_tags,
-                    "missing_from_fs": False,
-                },
-            )
+            moved_attrs = {
+                "fs_name": fs_rom["fs_name"],
+                "fs_path": roms_path,
+                "regions": parsed_tags.regions,
+                "revision": parsed_tags.revision,
+                "version": parsed_tags.version,
+                "languages": parsed_tags.languages,
+                "tags": parsed_tags.other_tags,
+                "missing_from_fs": False,
+            }
+            # A tag set by hand belongs to the entry, not to the file it moved to.
+            for field in ("regions", "languages"):
+                if missing_match.is_field_locked(field):
+                    moved_attrs.pop(field)
+            rom = db_rom_handler.update_rom(missing_match.id, moved_attrs)
             reassociated = True
             newly_added = False
             log.info(

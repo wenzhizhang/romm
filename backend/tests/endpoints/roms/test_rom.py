@@ -1467,7 +1467,10 @@ def test_update_rom_sets_languages_and_regions(
     response = client.put(
         f"/api/roms/{rom.id}",
         headers={"Authorization": f"Bearer {access_token}"},
-        data={"languages": '["Chinese", "English"]', "regions": '["China"]'},
+        data={
+            "languages": '["zh", "english", "Chinese"]',
+            "regions": '["china"]',
+        },
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -1478,6 +1481,32 @@ def test_update_rom_sets_languages_and_regions(
     stored = db_rom_handler.get_rom(rom.id)
     assert stored is not None
     assert stored.locked_fields == ["languages", "regions"]
+
+
+def test_update_rom_ignores_an_empty_tag_list(
+    client: TestClient, access_token: str, rom: Rom
+):
+    response = client.put(
+        f"/api/roms/{rom.id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"languages": ""},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    stored = db_rom_handler.get_rom(rom.id)
+    assert stored is not None
+    assert "languages" not in (stored.locked_fields or [])
+
+
+def test_update_rom_rejects_a_tag_list_that_is_not_json(
+    client: TestClient, access_token: str, rom: Rom
+):
+    response = client.put(
+        f"/api/roms/{rom.id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"languages": "Chinese"},
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_rom_clears_languages_and_releases_the_lock(
@@ -1499,9 +1528,10 @@ def test_update_rom_clears_languages_and_releases_the_lock(
 
     stored = db_rom_handler.get_rom(rom.id)
     assert stored is not None
-    assert stored.locked_fields == []
+    assert "languages" not in (stored.locked_fields or [])
 
 
+@pytest.mark.parametrize("languages", ['["Chinese"]', '["Japanese"]'])
 @patch.object(FSRomsHandler, "rename_fs_rom")
 @patch.object(IGDBHandler, "get_rom_by_id", return_value=IGDBRom(igdb_id=None))
 def test_update_rom_rename_hands_languages_back_to_the_filename(
@@ -1510,6 +1540,7 @@ def test_update_rom_rename_hands_languages_back_to_the_filename(
     client: TestClient,
     access_token: str,
     rom: Rom,
+    languages: str,
 ):
     with sync_session.begin() as session:
         stored = session.get(Rom, rom.id)
@@ -1520,7 +1551,7 @@ def test_update_rom_rename_hands_languages_back_to_the_filename(
     response = client.put(
         f"/api/roms/{rom.id}",
         headers={"Authorization": f"Bearer {access_token}"},
-        data={"fs_name": "test_rom (Europe) (En).zip", "languages": '["Chinese"]'},
+        data={"fs_name": "test_rom (Europe) (En).zip", "languages": languages},
     )
     assert response.status_code == status.HTTP_200_OK
 

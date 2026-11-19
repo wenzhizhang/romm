@@ -119,7 +119,11 @@ The edit dialog (rom details, `Edit`) has a **Languages** and a **Regions**
 field under its details tab, both a combobox over the names above that also
 accepts a typed value. Setting either writes the column directly and locks it,
 so a rescan or metadata refresh keeps the value. Renaming the file hands both
-fields back to the filename and re-parses them.
+fields back to the filename and re-parses them. Clearing a field releases the
+lock and clears the column, so the next scan fills it from the filename again.
+
+A typed code or alternate spelling resolves to the canonical name (`zh` becomes
+`Chinese`, `pl` becomes `Poland`); a name no table knows is kept as typed.
 
 ## Filtering
 

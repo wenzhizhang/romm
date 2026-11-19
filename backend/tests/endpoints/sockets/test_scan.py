@@ -1187,9 +1187,18 @@ class TestIdentifyRomReassociation:
     async def _run(self, platform: Platform) -> None:
         await run_identify_rom(platform, make_fs_rom("New Name.zip"))
 
+    @staticmethod
+    def _missing_rom(locked: frozenset[str] = frozenset()) -> MagicMock:
+        return MagicMock(
+            id=42,
+            name="Old Game",
+            fs_name="old.zip",
+            is_field_locked=lambda field: field in locked,
+        )
+
     async def test_reassociates_with_missing_entry(self, patched):
         db, platform = patched
-        missing = MagicMock(id=42, name="Old Game", fs_name="old.zip")
+        missing = self._missing_rom()
         db.get_matching_missing_rom.return_value = missing
         db.update_rom.return_value = missing
 
@@ -1209,6 +1218,29 @@ class TestIdentifyRomReassociation:
         assert data["fs_name"] == "New Name.zip"
         # No brand-new row is inserted; add_rom only persists the scan result.
         assert db.add_rom.call_count == 1
+
+    async def test_reassociation_keeps_a_hand_set_language(self, patched, mocker):
+        db, platform = patched
+        mocker.patch.object(
+            fs_rom_handler,
+            "parse_tags",
+            return_value=ParsedTags(
+                version="",
+                revision="",
+                regions=["Europe"],
+                languages=["English"],
+                other_tags=[],
+            ),
+        )
+        missing = self._missing_rom(frozenset({"languages", "regions"}))
+        db.get_matching_missing_rom.return_value = missing
+        db.update_rom.return_value = missing
+
+        await self._run(platform)
+
+        _, data = db.update_rom.call_args.args
+        assert "languages" not in data
+        assert "regions" not in data
 
     async def test_a_file_that_moved_folders_is_relocated_in_place(self, patched):
         """Enabling a custom structure (or dropping one) moves every rom. The
