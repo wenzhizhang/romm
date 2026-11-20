@@ -48,8 +48,8 @@ import type { GalleryItem } from "./types";
 export type { GalleryItem, GalleryItemKind } from "./types";
 
 // Row chrome below the cover art added to the cover box height to get a
-// grid row's total height: 7px gap + 16px label + 18px bottom padding = 41.
-const ROW_CHROME_PX = 41;
+// grid row's total height: 7px gap + 16px label + 28px bottom padding = 51.
+const ROW_CHROME_PX = 51;
 // Reference card-art width the row height is derived from when the caller
 // doesn't pass one (md gallery card). Height = width / ratio + chrome.
 const REFERENCE_COVER_WIDTH_PX = 158;

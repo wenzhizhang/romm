@@ -350,7 +350,7 @@ const jumpMenuVisible = computed(
 const scrollbarWidth = ref(0);
 // Card-art width reference (matches GameCard's `--r-card-art-w`); sets the
 // fixed card HEIGHT (a 2/3 cover at this width). Real width follows the ratio.
-const CARD_GAP_PX = 12;
+const CARD_GAP_PX = () => (xs.value ? 16 : 20);
 const cardWidth = () => (xs.value ? 130 : 158);
 const cardHeight = () => Math.round(cardWidth() / (2 / 3));
 const { columns, usableWidth } = useResponsiveColumns(scrollerEl, {
@@ -1424,14 +1424,14 @@ html[data-bp~="md-and-up"] .r-shell__list-header {
 }
 
 /* Flow-packed wrapping row: same-height, natural-width cards. The packer
-   sized it to fit, so `nowrap` is safe; gaps match the packer (12) and the
-   chrome math (18). `flex-start` pins every card to the same top. */
+   sized it to fit, so `nowrap` is safe; gaps match the packer (20) and the
+   chrome math (28). `flex-start` pins every card to the same top. */
 .r-shell__row {
   display: flex;
   flex-wrap: nowrap;
   align-items: flex-start;
-  gap: 12px;
-  padding-bottom: 18px;
+  gap: 20px;
+  padding-bottom: 28px;
 }
 /* Never shrink: float rounding can push a "just fits" row a hair over, and
    shrinking a fixed-height card would crop its cover. Take ragged overflow
@@ -1582,6 +1582,6 @@ html[data-bp~="sm-and-down"] .r-shell__scroller::after {
   height: calc(var(--r-bottom-nav-h) + var(--r-safe-b) + 24px);
 }
 html[data-bp~="xs"] .r-shell__row {
-  gap: 12px;
+  gap: 16px;
 }
 </style>
